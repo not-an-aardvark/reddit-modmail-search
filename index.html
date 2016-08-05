@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Reddit modmail search</title>
+<link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+
+<body>
+
+<div id="submit-box" class="box">
+ <h2>Reddit modmail search</h2>
+ <p>This <a href="https://github.com/not-an-aardvark/reddit-modmail-search">open-source</a> tool will search all modmails accessible to your reddit account.</p>
+
+ <p>Enter a search query (supports regex):</p>
+ <input id="search-query"></input>
+ <div id="url-error-message"></div>
+ <button id="submit-button" onclick="onSubmitClicked()" class="submit">Submit</button>
+ <p id="loading-message">Loading... (0 modmails processed so far)</p>
+</div>
+
+<pre>
+ <code id="error-output"></code>
+</pre>
+
+<ul id="results-list" class="box">
+
+</ul>
+
+</body>
+
+<script src="https://not-an-aardvark.github.io/snoowrap/snoowrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/bluebird/3.4.1/bluebird.min.js"></script>
+<script src="search.js"></script>
+</html>

@@ -1,44 +1,44 @@
 'use strict';
 /* global snoowrap */
-const REDDIT_APP_ID = '3JkC9UHWUz83Ew';
-const REDIRECT_URI = 'https://not-an-aardvark.github.io/reddit-modmail-search/';
+var REDDIT_APP_ID = '3JkC9UHWUz83Ew';
+var REDIRECT_URI = 'https://not-an-aardvark.github.io/reddit-modmail-search/';
 
-const USER_AGENT = 'reddit modmail search by /u/not_an_aardvark || https://github.com/not-an-aardvark/reddit-modmail-search';
-const REQUIRED_SCOPES = ['privatemessages'];
-let cachedRequester;
-let accessTokenPromise;
-let currentListing;
-let count = 0;
-const loadingMessage = document.getElementById('loading-message');
+var USER_AGENT = 'reddit modmail search by /u/not_an_aardvark || https://github.com/not-an-aardvark/reddit-modmail-search';
+var REQUIRED_SCOPES = ['privatemessages'];
+var cachedRequester;
+var accessTokenPromise;
+var currentListing;
+var count = 0;
+var loadingMessage = document.getElementById('loading-message');
 
-const query = parseQueryString(location.search);
-const cookies = parseCookieString(document.cookie);
+var query = parseQueryString(location.search);
+var cookies = parseCookieString(document.cookie);
 
 function parseQueryString (str) {
   if (!str) {
     return {};
   }
-  const obj = {};
-  const pieces = str.slice(1).split('&');
-  for (let i = 0; i < pieces.length; i++) {
-    const pair = pieces[i].split('=');
+  var obj = {};
+  var pieces = str.slice(1).split('&');
+  for (var i = 0; i < pieces.length; i++) {
+    var pair = pieces[i].split('=');
     obj[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
   }
   return obj;
 }
 
 function parseCookieString (cookieString) {
-  const obj = {};
-  const splitCookies = cookieString.split('; ');
-  splitCookies.forEach(cookie => {
-    const pair = cookie.split('=');
+  var obj = {};
+  var splitCookies = cookieString.split('; ');
+  splitCookies.forEach(function (cookie) {
+    var pair = cookie.split('=');
     obj[pair[0]] = pair[1];
   });
   return obj;
 }
 
-const getAuthRedirect = state =>
-`https://reddit.com/api/v1/authorize
+var getAuthRedirect = function (state) {
+  return `https://reddit.com/api/v1/authorize
 ?client_id=${REDDIT_APP_ID}
 &response_type=code
 &state=${encodeURIComponent(state)}
@@ -46,6 +46,7 @@ const getAuthRedirect = state =>
 &duration=temporary
 &scope=${REQUIRED_SCOPES.join('%2C')}
 `;
+};
 
 function getAccessToken () {
   if (accessTokenPromise) {
@@ -61,7 +62,7 @@ function getAccessToken () {
       method: 'post',
       url: 'https://www.reddit.com/api/v1/access_token',
       form: {grant_type: 'authorization_code', code: query.code, redirect_uri: REDIRECT_URI}
-    }).then(response => {
+    }).then(function (response) {
       if (!response.access_token) {
         throw new Error('Authentication failed');
       }
@@ -82,21 +83,27 @@ function getRequester (access_token) {
 }
 
 function satisfiesQuery (message, searchQuery) {
-  return searchQuery.split(' ').map(word => RegExp(word, 'i')).some(regex => regex.test(message.body) || regex.test(message.subject) || regex.test(message.author.name));
+  return searchQuery.split(' ').map(function (word) {
+    return RegExp(word, 'i');
+  }).some(function (regex) {
+    return regex.test(message.body) || regex.test(message.subject) || regex.test(message.author.name);
+  });
 }
 
 function flattenTree (message) {
-  return message.replies ? message.replies.map(flattenTree).reduce((acc, next) => acc.concat(next), []).concat(message) : [message];
+  return message.replies ? message.replies.map(flattenTree).reduce(function (acc, next) {
+    return acc.concat(next);
+  }, []).concat(message) : [message];
 }
 
 function escapeHtml (str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-const resultsList = document.getElementById('results-list');
+var resultsList = document.getElementById('results-list');
 function addMessageToDisplay (message) {
-  const formatted = `"<a href="https://reddit.com/message/messages/${escapeHtml(message.id)}">${message.subject}</a>" by /u/${escapeHtml(message.author.name)}, on /r/${escapeHtml(message.subreddit.display_name)}, on ${escapeHtml(new Date(message.created_utc * 1000).toString())}`;
-  const li = document.createElement('li');
+  var formatted = `"<a href="https://reddit.com/message/messages/${escapeHtml(message.id)}">${message.subject}</a>" by /u/${escapeHtml(message.author.name)}, on /r/${escapeHtml(message.subreddit.display_name)}, on ${escapeHtml(new Date(message.created_utc * 1000).toString())}`;
+  var li = document.createElement('li');
   li.innerHTML = formatted;
   resultsList.appendChild(li);
 }
@@ -111,11 +118,13 @@ function getBatch () {
   }
   return getAccessToken(query.code)
     .then(getRequester)
-    .then(r => r.getModmail({limit: 100}));
+    .then(function (r) {
+      return r.getModmail({limit: 100});
+    });
 }
 
 function onSubmitClicked () { // eslint-disable-line no-unused-vars
-  const searchQuery = document.getElementById('search-query').value;
+  var searchQuery = document.getElementById('search-query').value;
   document.getElementById('loading-message').style.display = 'block';
   if (cookies.access_token || query.code) {
     return start(searchQuery);
@@ -125,30 +134,36 @@ function onSubmitClicked () { // eslint-disable-line no-unused-vars
 
 function start (searchQuery) {
   return getBatch()
-    .tap(result => {
+    .tap(function (result) {
       currentListing = result;
     })
     .map(flattenTree)
-    .reduce((acc, next) => acc.concat(next), [])
-    .tap(result => {
+    .reduce(function (acc, next) {
+      return acc.concat(next);
+    }, [])
+    .tap(function (result) {
       count += result.length;
       loadingMessage.innerHTML = `Loading... ${count} modmails processed so far`;
     })
-    .filter(message => satisfiesQuery(message, searchQuery))
+    .filter(function (message) {
+      return satisfiesQuery(message, searchQuery);
+    })
     .mapSeries(addMessageToDisplay)
-    .catch(err => {
+    .catch(function (err) {
       document.getElementById('error-output').innerHTML = 'An unknown error occured. Check the dev console for more details.';
       throw err;
     })
-    .then(() => start(searchQuery));
+    .then(function () {
+      return start(searchQuery);
+    });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
   if (cookies.access_token || query.code) {
     getAccessToken();
   }
   if (query.state) {
-    const searchQuery = decodeURIComponent(query.state);
+    var searchQuery = decodeURIComponent(query.state);
     document.getElementById('search-query').value = searchQuery;
     return start(searchQuery);
   }

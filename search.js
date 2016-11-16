@@ -145,16 +145,17 @@ function start (searchQuery) {
       count += result.length;
       loadingMessage.innerHTML = `Loading... ${count} modmails processed so far`;
     })
-    .filter(function (message) {
-      return satisfiesQuery(message, searchQuery);
-    })
-    .mapSeries(addMessageToDisplay)
-    .catch(function (err) {
+    .then(function (modmails) {
+      if (!modmails.length) {
+        return null;
+      }
+      modmails.filter(function (message) {
+        return satisfiesQuery(message, searchQuery);
+      }).map(addMessageToDisplay);
+      return start(searchQuery);
+    }).catch(function (err) {
       document.getElementById('error-output').innerHTML = 'An unknown error occured. Check the dev console for more details.';
       throw err;
-    })
-    .then(function () {
-      return start(searchQuery);
     });
 }
 
